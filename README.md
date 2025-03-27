@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ---
 title: Biomedical Image Search Engine
 emoji: 🧬
@@ -10,8 +9,6 @@ app_file: app.py
 pinned: true
 ---
 
-
-
 # Biomedical Image Search Engine 🧠🔬  
 > Search biomedical images using image upload or natural language queries. Powered by CLIP, FAISS, and Gradio.
 
@@ -21,7 +18,7 @@ pinned: true
 
 This app allows users to retrieve biomedical images based on:
 
-- 🖼 **Visual similarity** — Upload an image and find others that look like it
+- 🖼 **Visual similarity** — Upload an image and find others that look like it  
 - 💬 **Text prompts** — Type descriptions like "lung carcinoma" or "pink-stained cells" to search by meaning
 
 It uses **zero-shot learning** via OpenAI's CLIP model to embed both images and text into a common vector space, and **FAISS** to return the top-k most similar images from a curated dataset (PathMNIST, 9-class histopathology).
@@ -42,9 +39,9 @@ This tool makes that kind of exploration **instant** and **multimodal**.
 
 ## 🧠 Powered by
 
-- **CLIP** (Contrastive Language–Image Pre-training) for vision-language embeddings
-- **FAISS** for fast, scalable similarity search
-- **Gradio** for a beautiful and interactive UI
+- **CLIP** (Contrastive Language–Image Pre-training) for vision-language embeddings  
+- **FAISS** for fast, scalable similarity search  
+- **Gradio** for a beautiful and interactive UI  
 - **PathMNIST** as the working dataset (upgradeable to BIOMEDICA or custom sets)
 
 ---
@@ -52,7 +49,7 @@ This tool makes that kind of exploration **instant** and **multimodal**.
 ## ✍️ Example usage
 
 > Upload: a microscopic slide of stained epithelial cells  
-> Output: top-5 similar images from the dataset
+> Output: top-5 similar images from the dataset  
 
 > Input: `"microscopic blood smear with nucleus"`  
 > Output: 5 images that match the text semantically
@@ -79,14 +76,7 @@ This project was created to demonstrate engineering, AI, and scientific applicat
 ## 🔮 Roadmap
 
 This is just the start. Future extensions may include:
-- Caption + label display for retrieved images
-- Real clinical datasets (e.g., BIOMEDICA)
-- Hybrid text + image queries
+- Caption + label display for retrieved images  
+- Real clinical datasets (e.g., BIOMEDICA)  
+- Hybrid text + image queries  
 - Deployment to hospitals or research labs as internal tooling
-=======
-# Biomedical Image Search Engine
-
-Search for biomedical images using image input or biomedical text prompts.
-
-Built using CLIP, FAISS, and Gradio. Created by Alessandro Scanferla.
->>>>>>> 7fa90a84 (prepare for HF deployment)
