@@ -2,25 +2,26 @@ import gradio as gr
 import numpy as np
 import pandas as pd
 import faiss
-from PIL import Image
-from transformers import CLIPProcessor, CLIPModel
-import torch
 import os
+import torch
+from PIL import Image
 from tqdm import tqdm
-from medmnist import INFO, PathMNIST
+from transformers import CLIPProcessor, CLIPModel
+from medmnist import INFO, PathMNIST, download
 
 # ====================
-# 🔧 Setup and Download Dataset
+# 📁 Setup and Download Dataset
 # ====================
+root = "./data"
+os.makedirs(root, exist_ok=True)
 info = INFO["pathmnist"]
 data_class = PathMNIST
-root = "./data"
 
 if not os.path.exists(f"{root}/pathmnist_images.npy"):
     print("📥 Downloading and processing PathMNIST dataset...")
     train_dataset = data_class(split="train", download=True, root=root)
     val_dataset = data_class(split="val", download=True, root=root)
-    
+
     all_data = np.concatenate([train_dataset.imgs, val_dataset.imgs], axis=0)
     all_labels = np.concatenate([train_dataset.labels, val_dataset.labels], axis=0)
     all_images = [Image.fromarray(img.transpose(1, 2, 0)) for img in all_data]
@@ -29,21 +30,22 @@ if not os.path.exists(f"{root}/pathmnist_images.npy"):
         "image": all_images,
         "label": all_labels.flatten()
     })
+    df = df.sample(500, random_state=42).reset_index(drop=True)  # Use a subset to speed things up
     df.to_pickle(f"{root}/pathmnist_subset.pkl")
     print("✅ Saved dataframe")
 else:
     df = pd.read_pickle(f"{root}/pathmnist_subset.pkl")
 
-
 # ====================
-# 🔎 Embedding
+# 🔗 CLIP Embedding
 # ====================
 print("🔗 Loading CLIP model and embedding images...")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
-if not os.path.exists(f"{root}/pathmnist_image_embeddings.npy"):
+embedding_path = f"{root}/pathmnist_image_embeddings.npy"
+if not os.path.exists(embedding_path):
     embeddings = []
     for img in tqdm(df["image"], desc="🔍 Embedding images"):
         img_resized = img.resize((224, 224))
@@ -53,21 +55,21 @@ if not os.path.exists(f"{root}/pathmnist_image_embeddings.npy"):
         embeddings.append(embedding.cpu().numpy())
 
     embeddings = np.concatenate(embeddings, axis=0)
-    np.save(f"{root}/pathmnist_image_embeddings.npy", embeddings)
+    np.save(embedding_path, embeddings)
 else:
-    embeddings = np.load(f"{root}/pathmnist_image_embeddings.npy")
+    embeddings = np.load(embedding_path)
 
 embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
 
 # ====================
-# 🔍 FAISS Index
+# 🧠 FAISS Index
 # ====================
 dimension = embeddings.shape[1]
 index = faiss.IndexFlatIP(dimension)
 index.add(embeddings)
 
 # ====================
-# 🔍 Search Function
+# 🔍 Similarity Search
 # ====================
 def search_similar(input_image=None, input_text=""):
     try:
@@ -95,18 +97,40 @@ def search_similar(input_image=None, input_text=""):
         return [None] * 5
 
 # ====================
-# 🚀 Gradio Interface
+# 🎛 Gradio UI + Suggestions
+# ====================
+sample_queries = [
+    "pink stained epithelial cells",
+    "tissue with dark nuclei",
+    "inflamed area",
+    "low density cancerous",
+    "uniform pattern cells"
+]
+
+textbox = gr.Textbox(
+    label="Or enter a biomedical description (optional)",
+    placeholder="e.g. pink stained epithelial cells"
+)
+
+examples = gr.Examples(
+    examples=[[None, q] for q in sample_queries],
+    inputs=[gr.Image(type="pil"), textbox]
+)
+
+# ====================
+# 🚀 Launch App
 # ====================
 demo = gr.Interface(
     fn=search_similar,
     inputs=[
         gr.Image(type="pil", label="Upload Image (optional)"),
-        gr.Textbox(label="Or enter a biomedical description (optional)")
+        textbox
     ],
     outputs=[gr.Image(type="pil") for _ in range(5)],
     title="Biomedical Image Search Engine",
     description="Upload a biomedical image OR type a medical concept to retrieve the most visually similar scientific images.",
-    allow_flagging="never"
+    allow_flagging="never",
+    examples=examples
 )
 
 demo.launch()
