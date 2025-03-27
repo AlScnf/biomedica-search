@@ -1,4 +1,17 @@
 <<<<<<< HEAD
+---
+title: Biomedical Image Search Engine
+emoji: 🧬
+colorFrom: indigo
+colorTo: purple
+sdk: gradio
+sdk_version: 4.6.0
+app_file: app.py
+pinned: true
+---
+
+
+
 # Biomedical Image Search Engine 🧠🔬  
 > Search biomedical images using image upload or natural language queries. Powered by CLIP, FAISS, and Gradio.
 
