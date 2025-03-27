@@ -7,7 +7,7 @@ import torch
 from PIL import Image
 from tqdm import tqdm
 from transformers import CLIPProcessor, CLIPModel
-from medmnist import INFO, PathMNIST, download
+from medmnist import INFO, PathMNIST
 
 # ====================
 # 📁 Setup and Download Dataset
@@ -17,8 +17,8 @@ os.makedirs(root, exist_ok=True)
 info = INFO["pathmnist"]
 data_class = PathMNIST
 
-if not os.path.exists(f"{root}/pathmnist_images.npy"):
-    print("📥 Downloading and processing PathMNIST dataset...")
+if not os.path.exists(f"{root}/pathmnist_subset.pkl"):
+    print("📅 Downloading and processing PathMNIST dataset...")
     train_dataset = data_class(split="train", download=True, root=root)
     val_dataset = data_class(split="val", download=True, root=root)
 
@@ -30,9 +30,9 @@ if not os.path.exists(f"{root}/pathmnist_images.npy"):
         "image": all_images,
         "label": all_labels.flatten()
     })
-    df = df.sample(500, random_state=42).reset_index(drop=True)  # Use a subset to speed things up
+    df = df.sample(500, random_state=42).reset_index(drop=True)
     df.to_pickle(f"{root}/pathmnist_subset.pkl")
-    print("✅ Saved dataframe")
+    print("✅ Subset saved.")
 else:
     df = pd.read_pickle(f"{root}/pathmnist_subset.pkl")
 
