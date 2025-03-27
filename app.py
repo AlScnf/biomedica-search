@@ -6,94 +6,97 @@ from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
 import torch
 import os
-from pathlib import Path
-from medmnist import PathMNIST
-from torchvision import transforms
+from tqdm import tqdm
+from medmnist import INFO, PathMNIST
 
-# ----------------------
-# STEP 1: Ensure data is available
-# ----------------------
-PKL_PATH = Path("data/pathmnist_subset.pkl")
-NPY_PATH = Path("data/pathmnist_image_embeddings.npy")
+# ====================
+# 🔧 Setup and Download Dataset
+# ====================
+info = INFO["pathmnist"]
+data_class = PathMNIST
+root = "./data"
 
-if not PKL_PATH.exists() or not NPY_PATH.exists():
-    print("🔄 Data not found — regenerating pickle and embeddings...")
-    os.makedirs("data", exist_ok=True)
+if not os.path.exists(f"{root}/pathmnist_images.npy"):
+    print("📥 Downloading and processing PathMNIST dataset...")
+    train_dataset = data_class(split="train", download=True, root=root)
+    val_dataset = data_class(split="val", download=True, root=root)
+    
+    all_data = np.concatenate([train_dataset.imgs, val_dataset.imgs], axis=0)
+    all_labels = np.concatenate([train_dataset.labels, val_dataset.labels], axis=0)
+    all_images = [Image.fromarray(img.transpose(1, 2, 0)) for img in all_data]
 
-    transform = transforms.Compose([transforms.ToTensor()])
-    dataset = PathMNIST(split='train', transform=transform, download=True)
+    df = pd.DataFrame({
+        "image": all_images,
+        "label": all_labels.flatten()
+    })
+    df.to_pickle(f"{root}/pathmnist_subset.pkl")
+    print("✅ Saved dataframe")
+else:
+    df = pd.read_pickle(f"{root}/pathmnist_subset.pkl")
 
-    model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-    processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-    model.eval()
 
-    images, labels, embs = [], [], []
-    for i in range(1000):
-        img, label = dataset[i]
-        images.append(np.array(img))
-        labels.append(int(label))
-        inputs = processor(images=img, return_tensors="pt", padding=True)
+# ====================
+# 🔎 Embedding
+# ====================
+print("🔗 Loading CLIP model and embedding images...")
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+if not os.path.exists(f"{root}/pathmnist_image_embeddings.npy"):
+    embeddings = []
+    for img in tqdm(df["image"], desc="🔍 Embedding images"):
+        img_resized = img.resize((224, 224))
+        inputs = processor(images=img_resized, return_tensors="pt").to(device)
         with torch.no_grad():
-            features = model.get_image_features(**inputs)
-            feature = features[0].numpy()
-            feature /= np.linalg.norm(feature)
-            embs.append(feature)
+            embedding = model.get_image_features(**inputs)
+        embeddings.append(embedding.cpu().numpy())
 
-    df = pd.DataFrame({"image": images, "label": labels})
-    df.to_pickle(PKL_PATH)
-    np.save(NPY_PATH, np.array(embs))
-    print("✅ Regeneration complete!")
+    embeddings = np.concatenate(embeddings, axis=0)
+    np.save(f"{root}/pathmnist_image_embeddings.npy", embeddings)
+else:
+    embeddings = np.load(f"{root}/pathmnist_image_embeddings.npy")
 
-# ----------------------
-# STEP 2: Load everything
-# ----------------------
-df = pd.read_pickle(PKL_PATH)
-embeddings = np.load(NPY_PATH)
 embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
 
-index = faiss.IndexFlatIP(embeddings.shape[1])
+# ====================
+# 🔍 FAISS Index
+# ====================
+dimension = embeddings.shape[1]
+index = faiss.IndexFlatIP(dimension)
 index.add(embeddings)
 
-model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-device = "cpu"
-model.to(device).eval()
-
-# ----------------------
-# STEP 3: Define interface logic
-# ----------------------
+# ====================
+# 🔍 Search Function
+# ====================
 def search_similar(input_image=None, input_text=""):
     try:
-        print("🚀 Received input")
         if input_image is not None:
-            print("🧠 Processing image input...")
             input_image = input_image.resize((224, 224))
             inputs = processor(images=input_image, return_tensors="pt", padding=True).to(device)
             with torch.no_grad():
                 features = model.get_image_features(**inputs)
+
         elif input_text.strip() != "":
-            print("🧠 Processing text input...")
             inputs = processor(text=input_text, return_tensors="pt", padding=True).to(device)
             with torch.no_grad():
                 features = model.get_text_features(**inputs)
         else:
-            raise ValueError("No input provided.")
+            raise ValueError("Provide either an image or text.")
 
         vector = features[0].cpu().numpy()
         vector /= np.linalg.norm(vector)
 
         D, I = index.search(vector.reshape(1, -1), 5)
-        print(f"✅ FAISS returned {len(I[0])} results")
-
         return [df.iloc[idx]["image"] for idx in I[0]]
 
     except Exception as e:
-        print(f"❌ ERROR: {e}")
+        print(f"Error: {e}")
         return [None] * 5
 
-# ----------------------
-# STEP 4: Launch Gradio app
-# ----------------------
+# ====================
+# 🚀 Gradio Interface
+# ====================
 demo = gr.Interface(
     fn=search_similar,
     inputs=[
@@ -102,7 +105,7 @@ demo = gr.Interface(
     ],
     outputs=[gr.Image(type="pil") for _ in range(5)],
     title="Biomedical Image Search Engine",
-    description="Upload a biomedical image OR type a medical concept to retrieve the most visually similar images.",
+    description="Upload a biomedical image OR type a medical concept to retrieve the most visually similar scientific images.",
     allow_flagging="never"
 )
 
