@@ -24,7 +24,8 @@ if not os.path.exists(f"{root}/pathmnist_subset.pkl"):
 
     all_data = np.concatenate([train_dataset.imgs, val_dataset.imgs], axis=0)
     all_labels = np.concatenate([train_dataset.labels, val_dataset.labels], axis=0)
-    all_images = [Image.fromarray(img.transpose(1, 2, 0)) for img in all_data]
+    all_images = [Image.fromarray(img.transpose(1, 2, 0).astype(np.uint8)) for img in all_data]
+
 
     df = pd.DataFrame({
         "image": all_images,
