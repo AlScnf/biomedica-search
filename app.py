@@ -24,7 +24,16 @@ if not os.path.exists(f"{root}/pathmnist_subset.pkl"):
 
     all_data = np.concatenate([train_dataset.imgs, val_dataset.imgs], axis=0)
     all_labels = np.concatenate([train_dataset.labels, val_dataset.labels], axis=0)
-    all_images = [Image.fromarray(img.transpose(1, 2, 0).astype(np.uint8)) for img in all_data]
+    all_images = []
+for img in all_data:
+    img = np.squeeze(img)  # get rid of any singleton dims (e.g. (1, 1, 28) -> (28,))
+    if img.ndim == 2:  # grayscale
+        img = Image.fromarray((img * 255).astype(np.uint8), mode="L")
+    elif img.ndim == 3:
+        img = Image.fromarray((img.transpose(1, 2, 0) * 255).astype(np.uint8))
+    else:
+        raise ValueError(f"Unsupported image shape: {img.shape}")
+    all_images.append(img)
 
 
     df = pd.DataFrame({
