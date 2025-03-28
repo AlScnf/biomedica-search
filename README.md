@@ -81,10 +81,10 @@ You can test it with:
 ## 👨‍🔬 Author
 
 **Alessandro Scanferla**  
-Founder-minded · Tech explorer · Passionate about biotech and AI  
+Future founder · Tech explorer · Passionate about deep-tech  
 💼 [LinkedIn](https://www.linkedin.com/in/alessandroscanferla-/)
 
-This project was created to demonstrate engineering skills applied to scientific domains, especially in preparation for my application to the EPFL MTE program.
+This project was created to demonstrate engineering skills applied to scientific domains.
 
 ---
 
