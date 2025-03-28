@@ -1,82 +1,122 @@
----
-title: Biomedical Image Search Engine
-emoji: 🧬
-colorFrom: indigo
-colorTo: purple
-sdk: gradio
-sdk_version: 4.19.2
-app_file: app.py
-pinned: true
----
+# 🧬 Biomedical Image Search Engine
 
-# Biomedical Image Search Engine 🧠🔬  
-> Search biomedical images using image upload or natural language queries. Powered by CLIP, FAISS, and Gradio.
+> A minimal, zero-shot biomedical image search engine powered by CLIP + FAISS. Query using an image or a text description.
 
 ---
 
-## 🚀 What it does
+## 🚀 Live Demo
 
-This app allows users to retrieve biomedical images based on:
+👉 [**Launch on Hugging Face Spaces**](https://huggingface.co/spaces/Scnf/biomedica-search)
 
-- 🖼 **Visual similarity** — Upload an image and find others that look like it  
-- 💬 **Text prompts** — Type descriptions like "lung carcinoma" or "pink-stained cells" to search by meaning
+Upload a biomedical image **or** type a medical concept to retrieve the most visually or semantically similar slides.
 
-It uses **zero-shot learning** via OpenAI's CLIP model to embed both images and text into a common vector space, and **FAISS** to return the top-k most similar images from a curated dataset (PathMNIST, 9-class histopathology).
-
----
-
-## 💡 Why it matters
-
-Biomedical professionals often search large image datasets visually or semantically:
-
-- A **clinician** might want to see cases similar to one they’re analyzing  
-- A **student** might want examples of specific cell structures  
-- A **researcher** might want to explore patterns across labeled images
-
-This tool makes that kind of exploration **instant** and **multimodal**.
+📁 Need examples? Download 9 sample slides (one per class):  
+👉 [**Google Drive Folder**](https://drive.google.com/drive/folders/1eCWP_UnL2etBhWhtAKVr1YHSNolkIIRI?usp=sharing)
 
 ---
 
-## 🧠 Powered by
+## 🧠 What It Does
 
-- **CLIP** (Contrastive Language–Image Pre-training) for vision-language embeddings  
-- **FAISS** for fast, scalable similarity search  
-- **Gradio** for a beautiful and interactive UI  
-- **PathMNIST** as the working dataset (upgradeable to BIOMEDICA or custom sets)
+This tool retrieves the top-5 most relevant histopathology images from a subset of the **PathMNIST** dataset based on a **query**:
 
----
+- 🖼 Upload an image → find visually similar samples
+- 💬 Type a biomedical description → get semantically related slides
 
-## ✍️ Example usage
-
-> Upload: a microscopic slide of stained epithelial cells  
-> Output: top-5 similar images from the dataset  
-
-> Input: `"microscopic blood smear with nucleus"`  
-> Output: 5 images that match the text semantically
+Under the hood, both modalities are encoded into the **same embedding space** using OpenAI’s **CLIP** model.
 
 ---
 
-## 👨‍💻 About the Author
+## 🔍 Key Features
+
+- **Multimodal search**: text or image input
+- **Zero-shot**: no task-specific fine-tuning
+- **Real-time inference** on the Hugging Face platform
+- **Lightweight dataset** (500 samples from PathMNIST)
+- Optimized with **FAISS** for fast vector retrieval
+
+---
+
+## 🛠️ Tech Stack
+
+| Component        | Tool                         |
+|------------------|-------------------------------|
+| Embedding model  | OpenAI [CLIP](https://openai.com/research/clip)         |
+| Similarity search| [FAISS](https://github.com/facebookresearch/faiss)      |
+| Dataset          | [PathMNIST](https://medmnist.com/) (via MedMNIST)       |
+| Web UI           | [Gradio](https://www.gradio.app/)                       |
+| Hosting          | Hugging Face Spaces           |
+
+---
+
+## 📁 Project Structure
+
+biomedical-image-search/
+│
+├── app.py                       # Main Gradio app
+├── README.md                    # One-pager già pronto
+├── requirements.txt             # Tutte le dipendenze (Gradio, Transformers, etc.)
+├── data/
+│   └── (vuoto, solo .gitkeep o README)
+├── examples/
+│   └── class_0.png ...          # 9 immagini di esempio
+├── save_images.py              # Script per generare immagini di esempio
+├── .gitignore                  # Ignora tutto ciò che è inutile
+└── .gitattributes              # (opzionale, solo se usi Git LFS)
+
+
+## 📚 Background
+
+This project was inspired by the recent Stanford research paper:
+
+> **[BIOMEDICA: Large-Scale Zero-Shot Biomedical Image Classification and Captioning](https://arxiv.org/abs/2311.17088)**
+
+It highlights how general-purpose models like CLIP can perform competitively on medical datasets **without domain-specific tuning**. This project is a lightweight reproduction of that idea, with real-time inference and an accessible interface.
+
+---
+
+## 🧪 How to Use It
+
+1. **Go to the [demo](https://huggingface.co/spaces/Scnf/biomedica-search)**
+2. Upload a sample slide **or** type a prompt like:
+   - "pink stained epithelial cells"
+   - "microscopic blood smear with nucleus"
+3. Wait a few seconds, and receive 5 images from the dataset ranked by similarity
+
+---
+
+## 📁 Example Inputs
+
+You can test it with:
+
+- ✅ Your own biomedical image (uploaded in JPG or PNG)
+- ✅ Free-text descriptions ("lung carcinoma", "purple-stained cells")
+- ✅ [Pre-curated examples](https://drive.google.com/drive/folders/1eCWP_UnL2etBhWhtAKVr1YHSNolkIIRI?usp=sharing) from the 9 PathMNIST classes
+
+---
+
+## 👨‍🔬 Author
 
 **Alessandro Scanferla**  
-Founder-minded | Tech Explorer  
+Founder-minded · Tech explorer · Passionate about biotech and AI  
+💼 [LinkedIn](https://www.linkedin.com/in/alessandroscanferla-/)
 
-This project was created to demonstrate engineering, AI, and scientific application skills for:
-- 🧪 Professors and research collaborators  
-- 💼 Potential partners for biomedical AI projects
-
----
-
-## ⚖️ License
-
-[MIT License](LICENSE) — open to use, remix, and learn from.
+This project was created to demonstrate engineering skills applied to scientific domains, especially in preparation for my application to the EPFL MTE program.
 
 ---
 
-## 🔮 Roadmap
+## 🧩 Future Work
 
-This is just the start. Future extensions may include:
-- Caption + label display for retrieved images  
-- Real clinical datasets (e.g., BIOMEDICA)  
-- Hybrid text + image queries  
-- Deployment to hospitals or research labs as internal tooling
+- Switch to real clinical datasets (e.g., BIOMEDICA or TCGA)
+- Add class labels or captions to retrieved images
+- Enable hybrid queries (text + image)
+- Fine-tune on downstream tasks (e.g., diagnosis, segmentation)
+
+---
+
+## 📜 License
+
+MIT License — free to use, remix, and build on.
+
+---
+
+_If this sparks any ideas or you'd like to collaborate, feel free to reach out!_
