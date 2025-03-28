@@ -48,12 +48,6 @@ Under the hood, both modalities are encoded into the **same embedding space** us
 
 ---
 
-## 📁 Project Structure
-
-<pre lang="markdown"> ## 📁 Project Structure ``` biomedica-search/ ├── app.py # Main Gradio app ├── README.md # One-pager già pronto ├── requirements.txt # Tutte le dipendenze (Gradio, Transformers, etc.) ├── data/ # Vuoto (solo .gitkeep o README) ├── examples/ # 9 immagini di esempio │ └── class_0.png ... ├── save_images.py # Script per generare immagini di esempio ├── .gitignore # Ignora tutto ciò che è inutile └── .gitattributes # (opzionale, solo se usi Git LFS) ``` </pre>          
-
-
-
 ## 📚 Background
 
 This project was inspired by the recent Stanford research paper:
