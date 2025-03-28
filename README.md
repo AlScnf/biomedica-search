@@ -50,25 +50,24 @@ Under the hood, both modalities are encoded into the **same embedding space** us
 
 ## 📁 Project Structure
 
-biomedical-image-search/
-│
-├── app.py                       # Main Gradio app
-├── README.md                    # One-pager già pronto
-├── requirements.txt             # Tutte le dipendenze (Gradio, Transformers, etc.)
-├── data/
-│   └── (vuoto, solo .gitkeep o README)
-├── examples/
-│   └── class_0.png ...          # 9 immagini di esempio
-├── save_images.py              # Script per generare immagini di esempio
-├── .gitignore                  # Ignora tutto ciò che è inutile
-└── .gitattributes              # (opzionale, solo se usi Git LFS)
+biomedica-search/
+├── app.py                  
+├── README.md              
+├── requirements.txt       
+├── data/                  
+├── examples/               
+│   └── class_0.png ...     
+├── save_images.py          
+├── .gitignore              
+└── .gitattributes          
+
 
 
 ## 📚 Background
 
 This project was inspired by the recent Stanford research paper:
 
-> **[BIOMEDICA: Large-Scale Zero-Shot Biomedical Image Classification and Captioning](https://arxiv.org/abs/2311.17088)**
+> **[BIOMEDICA: Large-Scale Zero-Shot Biomedical Image Classification and Captioning]([https://arxiv.org/abs/2311.17088](https://minwoosun.github.io/biomedica-website/))**
 
 It highlights how general-purpose models like CLIP can perform competitively on medical datasets **without domain-specific tuning**. This project is a lightweight reproduction of that idea, with real-time inference and an accessible interface.
 
