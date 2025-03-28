@@ -80,16 +80,41 @@ def search_similar(input_image=None, input_text=""):
 # ====================
 # 🚀 Gradio Interface
 # ====================
+
+sample_queries = [
+    "microscopic blood smear with nucleus",
+    "lung tissue inflammation",
+    "pink-stained epithelial cells",
+    "dense tumor region",
+    "uniform round cells"
+]
+
+textbox = gr.Textbox(
+    label="Or enter a biomedical description (optional)",
+    placeholder="e.g. pink-stained epithelial cells"
+)
+
+examples = gr.Examples(
+    examples=[[None, q] for q in sample_queries],
+    inputs=[gr.Image(type="pil"), textbox],
+    label="🔍 Try one of these queries"
+)
+
 demo = gr.Interface(
     fn=search_similar,
     inputs=[
         gr.Image(type="pil", label="Upload Image (optional)"),
-        gr.Textbox(label="Or enter a biomedical description (optional)")
+        textbox
     ],
     outputs=[gr.Image(type="pil") for _ in range(5)],
     title="Biomedical Image Search Engine",
-    description="Upload a biomedical image OR type a medical concept to retrieve the most visually similar scientific images.",
-    allow_flagging="never"
+    description=(
+        "Upload a biomedical image OR type a medical concept to retrieve the most visually similar scientific images.\n\n"
+        "🧪 [Click here to download 9 example images](https://drive.google.com/drive/folders/1eCWP_UnL2etBhWhtAKVr1YHSNolkIIRI?usp=sharing)"
+    ),
+    allow_flagging="never",
+    examples=examples
 )
 
 demo.launch()
+
